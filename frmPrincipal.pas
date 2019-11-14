@@ -33,11 +33,14 @@ type
     SpeedButton2: TSpeedButton;
     edServidorAtual: TEdit;
     edPathAtual: TEdit;
+    chkServidor: TCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCarregarClick(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
     procedure btGravarClick(Sender: TObject);
+    procedure chkServidorClick(Sender: TObject);
+    procedure cbServidorDestinoChange(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
@@ -120,7 +123,9 @@ begin
     except on E: Exception do
       ShowMessage('Ocorreu um erro ao gravar novo registro no banco' + #13 + e.Message);
     end;
-  end;
+  end
+  else
+    Result := True;
 end;
 
 procedure TfrPrincipal.btnCarregarClick(Sender: TObject);
@@ -147,6 +152,16 @@ begin
       FreeAndNil(vIniBanco)
     end;
   end;
+end;
+
+procedure TfrPrincipal.cbServidorDestinoChange(Sender: TObject);
+begin
+  CarregaCombo(cbPathDestino);
+end;
+
+procedure TfrPrincipal.chkServidorClick(Sender: TObject);
+begin
+  CarregaCombo(cbPathDestino);
 end;
 
 function TfrPrincipal.ConectaBanco: Boolean;
@@ -186,8 +201,8 @@ end;
 
 procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
 const
-  SQL_SERVIDOR = 'SELECT DISTINCT NOMESERVIDOR, PORTA FROM SERVIDOR ORDER BY ID ASC';
-  SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR ORDER BY NOMESERVIDOR ASC, PATHSERVIDOR ASC';
+  SQL_SERVIDOR = 'SELECT DISTINCT NOMESERVIDOR, PORTA FROM SERVIDOR ORDER BY NOMESERVIDOR ASC';
+  SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR %s ORDER BY NOMESERVIDOR ASC, PATHSERVIDOR ASC';
 var
   vServidor: String;
 begin
@@ -197,6 +212,12 @@ begin
     qryAux.SQL.Text := SQL_SERVIDOR
   else
     qryAux.SQL.Text := SQL_PATH;
+
+  if chkServidor.Checked and (TComboBox(pCombo).Name = cbPathDestino.Name) then
+    qryAux.SQL.Text := Format(qryAux.SQL.Text,[' WHERE NOMESERVIDOR = ' + QuotedStr(Trim(cbServidorDestino.Text)) + ' '])
+  else
+    qryAux.SQL.Text := Format(qryAux.SQL.Text,[EmptyStr]);
+
   qryAux.Open;
 
   pCombo.Items.Clear;
@@ -206,12 +227,17 @@ begin
       pCombo.Items.Add(Trim(qryAux.FieldByName('NOMESERVIDOR').AsString))
     else
     begin
-      if vServidor <> Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) then
+      if not chkServidor.Checked then
       begin
-        pCombo.Items.Add('-- ' + Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) + ' --');
-        vServidor := Trim(qryAux.FieldByName('NOMESERVIDOR').AsString)
-      end;
-      pCombo.Items.Add(Trim(qryAux.FieldByName('PATHSERVIDOR').AsString));
+        if vServidor <> Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) then
+        begin
+          pCombo.Items.Add('-- ' + Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) + ' --');
+          vServidor := Trim(qryAux.FieldByName('NOMESERVIDOR').AsString)
+        end;
+        pCombo.Items.Add(Trim(qryAux.FieldByName('PATHSERVIDOR').AsString));
+      end
+      else
+        pCombo.Items.Add(Trim(qryAux.FieldByName('PATHSERVIDOR').AsString));
     end;
     qryAux.Next;
   end;
@@ -220,6 +246,9 @@ begin
     pCombo.ItemIndex := pCombo.Items.Indexof(edServidorAtual.Text)
   else
     pCombo.ItemIndex := pCombo.Items.Indexof(edPathAtual.Text);
+
+  if pCombo.ItemIndex < 0 then
+    pCombo.Text := EmptyStr;
 end;
 
 end.

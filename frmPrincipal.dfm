@@ -110,6 +110,7 @@ object frPrincipal: TfrPrincipal
       Top = 32
       Width = 348
       Height = 21
+      ReadOnly = True
       TabOrder = 0
     end
     object edPathAtual: TEdit
@@ -117,6 +118,7 @@ object frPrincipal: TfrPrincipal
       Top = 74
       Width = 348
       Height = 21
+      ReadOnly = True
       TabOrder = 1
     end
   end
@@ -152,10 +154,11 @@ object frPrincipal: TfrPrincipal
     object cbServidorDestino: TComboBox
       Left = 4
       Top = 32
-      Width = 348
+      Width = 181
       Height = 21
       DropDownCount = 16
       TabOrder = 0
+      OnChange = cbServidorDestinoChange
     end
     object cbPathDestino: TComboBox
       Left = 4
@@ -164,6 +167,15 @@ object frPrincipal: TfrPrincipal
       Height = 21
       DropDownCount = 16
       TabOrder = 1
+    end
+    object chkServidor: TCheckBox
+      Left = 192
+      Top = 34
+      Width = 162
+      Height = 17
+      Caption = 'Somente Path desse Servidor'
+      TabOrder = 2
+      OnClick = chkServidorClick
     end
   end
   object btGravar: TButton
