@@ -54,7 +54,7 @@ begin
   FIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
 
   edServidor.Text := FIniBanco.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
-  edPath.Text     := FIniBanco.ReadString('DIRETORIO', 'PATH', '');
+  edPath.Text     := FIniBanco.ReadString('PATH',     'PATHPAR',      '');
 end;
 
 procedure TfrmBanco.FormDestroy(Sender: TObject);

@@ -19,7 +19,7 @@ type
     GroupBox1: TGroupBox;
     Label1: TLabel;
     Label2: TLabel;
-    Edit1: TEdit;
+    edDiretorioAlterdbIni: TEdit;
     SpeedButton1: TSpeedButton;
     Label3: TLabel;
     GroupBox2: TGroupBox;
@@ -28,19 +28,21 @@ type
     btGravar: TButton;
     btnCarregar: TButton;
     dsDados: TDataSource;
-    cbServidorAtual: TComboBox;
-    cbPathAtual: TComboBox;
     qryAux: TFDQuery;
     cbServidorDestino: TComboBox;
     cbPathDestino: TComboBox;
     SpeedButton2: TSpeedButton;
+    edServidorAtual: TEdit;
+    edPathAtual: TEdit;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCarregarClick(Sender: TObject);
     procedure SpeedButton2Click(Sender: TObject);
+    procedure btGravarClick(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
+    procedure CarregaConfiguracaoAtual;
     { Private declarations }
   public
     { Public declarations }
@@ -62,12 +64,7 @@ end;
 
 procedure TfrPrincipal.FormCreate(Sender: TObject);
 begin
-//  if not ConectaBanco then
-//  begin
-//    SpeedButton2.Click;
-//  end;
-//
-//  btnCarregar.Click;
+  btnCarregar.Click;
 end;
 
 procedure TfrPrincipal.SpeedButton2Click(Sender: TObject);
@@ -77,13 +74,56 @@ begin
   ConectaBanco;
 end;
 
+procedure TfrPrincipal.btGravarClick(Sender: TObject);
+var
+  vIniBanco: TIniFile;
+begin
+  if MessageDlg('Confirma alteração do INI?',mtConfirmation, mbYesNo, 0) = mrNo then
+    Exit;
+
+  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
+  begin
+    vIniBanco := TIniFile.Create(edDiretorioAlterdbIni.text);
+    try
+      try
+        vIniBanco.DeleteKey('SERVIDOR', 'NOMESERVIDOR');
+        vIniBanco.WriteString('SERVIDOR', 'NOMESERVIDOR', cbServidorDestino.Text);
+        vIniBanco.DeleteKey('PATH', 'PATHPAR');
+        vIniBanco.WriteString('PATH', 'PATHPAR', cbPathDestino.Text);
+        ShowMessage('Salvo com sucesso');
+      except
+        ShowMessage('Ocorreu um erro ao salvar no INI');
+      end;
+    finally
+      FreeAndNil(vIniBanco)
+    end;
+  end;
+end;
+
 procedure TfrPrincipal.btnCarregarClick(Sender: TObject);
 begin
   if not db.Connected then
     ConectaBanco;
 
+  CarregaConfiguracaoAtual;
   CarregaCombo(cbServidorDestino);
   CarregaCombo(cbPathDestino);
+end;
+
+procedure TfrPrincipal.CarregaConfiguracaoAtual;
+var
+  vIniBanco: TIniFile;
+begin
+  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
+  begin
+    vIniBanco := TIniFile.Create(edDiretorioAlterdbIni.text);
+    try
+      edServidorAtual.Text := vIniBanco.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
+      edPathAtual.Text     := vIniBanco.ReadString('PATH', 'PATHPAR', '');
+    finally
+      FreeAndNil(vIniBanco)
+    end;
+  end;
 end;
 
 function TfrPrincipal.ConectaBanco: Boolean;
@@ -99,7 +139,7 @@ begin
       db.Params.Clear;
       db.DriverName := 'FB';
       vServidor := vIniBanco.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
-      vPath     := vIniBanco.ReadString('DIRETORIO', 'PATH', '') + '\DADOS.FDB';
+      vPath     := vIniBanco.ReadString('PATH', 'PATHPAR', '') + '\DADOS.FDB';
       db.Params.Add(Format('Server=%s',[vServidor]));
       db.Params.Add(Format('Database=%s',[vPath]));
       db.Params.Add('User_name=SYSDBA');
@@ -125,6 +165,8 @@ procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
 const
   SQL_SERVIDOR = 'SELECT DISTINCT NOMESERVIDOR, PORTA FROM SERVIDOR ORDER BY ID ASC';
   SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR';
+var
+  vServidor: String;
 begin
   qryAux.Close;
   qryAux.SQL.Clear;
@@ -140,10 +182,21 @@ begin
     if TComboBox(pCombo).Name = cbServidorDestino.Name then
       pCombo.Items.Add(Trim(qryAux.FieldByName('NOMESERVIDOR').AsString))
     else
+    begin
+      if vServidor <> Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) then
+      begin
+        pCombo.Items.Add('-- ' + Trim(qryAux.FieldByName('NOMESERVIDOR').AsString) + ' --');
+        vServidor := Trim(qryAux.FieldByName('NOMESERVIDOR').AsString)
+      end;
       pCombo.Items.Add(Trim(qryAux.FieldByName('PATHSERVIDOR').AsString));
+    end;
     qryAux.Next;
   end;
-  pCombo.ItemIndex := -1;
+
+  if TComboBox(pCombo).Name = cbServidorDestino.Name then
+    pCombo.ItemIndex := pCombo.Items.Indexof(edServidorAtual.Text)
+  else
+    pCombo.ItemIndex := pCombo.Items.Indexof(edPathAtual.Text);
 end;
 
 end.

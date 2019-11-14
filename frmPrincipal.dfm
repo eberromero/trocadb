@@ -111,24 +111,22 @@ object frPrincipal: TfrPrincipal
       Height = 13
       Caption = 'Path'
     end
-    object cbServidorAtual: TComboBox
-      Left = 5
+    object edServidorAtual: TEdit
+      Left = 4
       Top = 32
       Width = 348
       Height = 21
-      Style = csDropDownList
       TabOrder = 0
     end
-    object cbPathAtual: TComboBox
+    object edPathAtual: TEdit
       Left = 4
-      Top = 75
+      Top = 74
       Width = 348
       Height = 21
-      Style = csDropDownList
       TabOrder = 1
     end
   end
-  object Edit1: TEdit
+  object edDiretorioAlterdbIni: TEdit
     Left = 8
     Top = 22
     Width = 696
@@ -181,6 +179,7 @@ object frPrincipal: TfrPrincipal
     Height = 25
     Caption = 'Gravar Destino'
     TabOrder = 3
+    OnClick = btGravarClick
   end
   object btnCarregar: TButton
     Left = 135
