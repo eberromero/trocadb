@@ -18,13 +18,6 @@ object frPrincipal: TfrPrincipal
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object SpeedButton1: TSpeedButton
-    Left = 710
-    Top = 21
-    Width = 23
-    Height = 24
-    Caption = '...'
-  end
   object Label3: TLabel
     Left = 13
     Top = 6
@@ -33,11 +26,12 @@ object frPrincipal: TfrPrincipal
     Caption = 'Diret'#243'rio do alterdb.INI'
   end
   object SpeedButton2: TSpeedButton
-    Left = 721
-    Top = 177
-    Width = 23
-    Height = 22
+    Left = 716
+    Top = 175
+    Width = 28
+    Height = 27
     Cursor = crHandPoint
+    Flat = True
     Glyph.Data = {
       0E060000424D0E06000000000000360000002800000016000000160000000100
       180000000000D8050000130B0000130B00000000000000000000FCFFFDFCFFFD
@@ -129,7 +123,7 @@ object frPrincipal: TfrPrincipal
   object edDiretorioAlterdbIni: TEdit
     Left = 8
     Top = 22
-    Width = 696
+    Width = 726
     Height = 21
     TabOrder = 1
     Text = 'E:\dese.git\Executaveis\FormulaCerta\alterdb.ini'
@@ -160,7 +154,7 @@ object frPrincipal: TfrPrincipal
       Top = 32
       Width = 348
       Height = 21
-      Style = csDropDownList
+      DropDownCount = 16
       TabOrder = 0
     end
     object cbPathDestino: TComboBox
@@ -168,7 +162,7 @@ object frPrincipal: TfrPrincipal
       Top = 75
       Width = 348
       Height = 21
-      Style = csDropDownList
+      DropDownCount = 16
       TabOrder = 1
     end
   end

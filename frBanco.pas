@@ -33,8 +33,8 @@ implementation
 
 procedure TfrmBanco.btnGravarClick(Sender: TObject);
 begin
-  FIniBanco.WriteString('SERVIDOR','NOMESERVIDOR',edServidor.Text);
-  FIniBanco.WriteString('DIRETORIO','PATH'       ,edPath.Text);
+  FIniBanco.WriteString('SERVIDOR', 'NOMESERVIDOR',edServidor.Text);
+  FIniBanco.WriteString('PATH',     'PATHPAR'       ,edPath.Text);
   Close;
 end;
 

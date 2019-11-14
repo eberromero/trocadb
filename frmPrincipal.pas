@@ -20,7 +20,6 @@ type
     Label1: TLabel;
     Label2: TLabel;
     edDiretorioAlterdbIni: TEdit;
-    SpeedButton1: TSpeedButton;
     Label3: TLabel;
     GroupBox2: TGroupBox;
     Label4: TLabel;
@@ -43,6 +42,7 @@ type
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
     procedure CarregaConfiguracaoAtual;
+    function ValidaCadastroNovo: Boolean;
     { Private declarations }
   public
     { Public declarations }
@@ -78,7 +78,7 @@ procedure TfrPrincipal.btGravarClick(Sender: TObject);
 var
   vIniBanco: TIniFile;
 begin
-  if MessageDlg('Confirma alteração do INI?',mtConfirmation, mbYesNo, 0) = mrNo then
+  if MessageDlg('Confirma alteração?',mtConfirmation, mbYesNo, 0) = mrNo then
     Exit;
 
   if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
@@ -90,12 +90,35 @@ begin
         vIniBanco.WriteString('SERVIDOR', 'NOMESERVIDOR', cbServidorDestino.Text);
         vIniBanco.DeleteKey('PATH', 'PATHPAR');
         vIniBanco.WriteString('PATH', 'PATHPAR', cbPathDestino.Text);
-        ShowMessage('Salvo com sucesso');
+        if ValidaCadastroNovo then
+          ShowMessage('Salvo com sucesso!');
       except
         ShowMessage('Ocorreu um erro ao salvar no INI');
       end;
     finally
       FreeAndNil(vIniBanco)
+    end;
+  end;
+  btnCarregar.Click;
+end;
+
+function TfrPrincipal.ValidaCadastroNovo: Boolean;
+begin
+  Result := False;
+  qryAux.Close;
+  qryAux.SQL.Text := Format('SELECT count(id) as qtd FROM SERVIDOR WHERE NOMESERVIDOR = %s and PATHSERVIDOR = %s',[QuotedStr(cbServidorDestino.Text), QuotedStr(cbPathDestino.Text)]);
+  qryAux.Open;
+  if qryAux.FieldByName('qtd').AsInteger = 0 then
+  begin
+    qryAux.Close;
+    qryAux.SQL.Text := ' insert into SERVIDOR (NOMESERVIDOR, PATHSERVIDOR) values (:NOMESERVIDOR, :PATHSERVIDOR);';
+    qryAux.ParamByName('NOMESERVIDOR').AsString := cbServidorDestino.Text;
+    qryAux.ParamByName('PATHSERVIDOR').AsString := cbPathDestino.Text;
+    try
+      qryAux.ExecSQL;
+      Result := True;
+    except on E: Exception do
+      ShowMessage('Ocorreu um erro ao gravar novo registro no banco' + #13 + e.Message);
     end;
   end;
 end;
@@ -164,7 +187,7 @@ end;
 procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
 const
   SQL_SERVIDOR = 'SELECT DISTINCT NOMESERVIDOR, PORTA FROM SERVIDOR ORDER BY ID ASC';
-  SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR ORDER BY NOMESERVIDOR';
+  SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR ORDER BY NOMESERVIDOR ASC, PATHSERVIDOR ASC';
 var
   vServidor: String;
 begin
