@@ -12,7 +12,7 @@ uses
   FireDAC.Comp.DataSet, FireDAC.Phys.FB, FireDAC.Phys.FBDef;
 
 type
-  TForm1 = class(TForm)
+  TfrPrincipal = class(TForm)
     db: TFDConnection;
     qryDados: TFDQuery;
     ts: TFDTransaction;
@@ -33,9 +33,11 @@ type
     qryAux: TFDQuery;
     cbServidorDestino: TComboBox;
     cbPathDestino: TComboBox;
+    SpeedButton2: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCarregarClick(Sender: TObject);
+    procedure SpeedButton2Click(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
@@ -45,46 +47,81 @@ type
   end;
 
 var
-  Form1: TForm1;
+  frPrincipal: TfrPrincipal;
 
 implementation
 
 {$R *.dfm}
 
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+uses IniFiles, frBanco;
+
+procedure TfrPrincipal.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := caFree;
 end;
 
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfrPrincipal.FormCreate(Sender: TObject);
 begin
-  if not ConectaBanco then
-  begin
-    Close;
-  end;
-
-  btnCarregar.Click;
+//  if not ConectaBanco then
+//  begin
+//    SpeedButton2.Click;
+//  end;
+//
+//  btnCarregar.Click;
 end;
 
-procedure TForm1.btnCarregarClick(Sender: TObject);
+procedure TfrPrincipal.SpeedButton2Click(Sender: TObject);
 begin
+  Application.CreateForm(TfrmBanco,frmBanco);
+  frmBanco.ShowModal;
+  ConectaBanco;
+end;
+
+procedure TfrPrincipal.btnCarregarClick(Sender: TObject);
+begin
+  if not db.Connected then
+    ConectaBanco;
+
   CarregaCombo(cbServidorDestino);
   CarregaCombo(cbPathDestino);
 end;
 
-function TForm1.ConectaBanco: Boolean;
+function TfrPrincipal.ConectaBanco: Boolean;
+var
+  vIniBanco: TIniFile;
+  vServidor,
+  vPath    : String;
 begin
+  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
+  begin
+    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    try
+      db.Params.Clear;
+      db.DriverName := 'FB';
+      vServidor := vIniBanco.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
+      vPath     := vIniBanco.ReadString('DIRETORIO', 'PATH', '') + '\DADOS.FDB';
+      db.Params.Add(Format('Server=%s',[vServidor]));
+      db.Params.Add(Format('Database=%s',[vPath]));
+      db.Params.Add('User_name=SYSDBA');
+      db.Params.Add('Password=masterkey');
+    finally
+      FreeAndNil(vIniBanco)
+    end;
+  end;
+
+
   try
     db.Connected := True;
-    Result := db.Connected;
+    Result       := db.Connected;
   except
     ShowMessage('Não foi possível se conectar ao banco de dados!' + #13 +
                'Valide o arquivo do banco de dados em:' + #13 +
-               '\\EBER-1963:E:\Prototipos\TrocaDB\DB\DADOS.FDB');
+               'Servidor: ' + vServidor + #13 +
+               'Path: ' + vPath);
   end;
 end;
 
-procedure TForm1.CarregaCombo(pCombo: TComboBox);
+procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
 const
   SQL_SERVIDOR = 'SELECT DISTINCT NOMESERVIDOR, PORTA FROM SERVIDOR ORDER BY ID ASC';
   SQL_PATH     = 'SELECT ID, NOMESERVIDOR, PATHSERVIDOR, PORTA FROM SERVIDOR';

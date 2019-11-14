@@ -2,13 +2,14 @@ program TrocaDB;
 
 uses
   Vcl.Forms,
-  frmPrincipal in 'frmPrincipal.pas' {Form1};
+  frmPrincipal in 'frmPrincipal.pas' {frPrincipal},
+  frBanco in 'frBanco.pas' {frmBanco};
 
 {$R *.res}
 
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TForm1, Form1);
+  Application.CreateForm(TfrPrincipal, frPrincipal);
   Application.Run;
 end.
