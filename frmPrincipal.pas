@@ -209,7 +209,19 @@ begin
 end;
 
 procedure TfrPrincipal.chkServidorClick(Sender: TObject);
+var
+  vIniBanco  : TIniFile;
 begin
+  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
+  begin
+    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+    try
+      vIniBanco.DeleteKey('PATH', 'PREFERENCIAPATH');
+      vIniBanco.WriteInteger('PATH', 'PREFERENCIAPATH', ifthen(chkServidor.Checked,1,0));
+    finally
+      FreeAndNil(vIniBanco)
+    end;
+  end;
   CarregaCombo(cbPathDestino);
 end;
 
