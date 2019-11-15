@@ -41,12 +41,14 @@ type
     procedure btGravarClick(Sender: TObject);
     procedure chkServidorClick(Sender: TObject);
     procedure cbServidorDestinoChange(Sender: TObject);
+    procedure edDiretorioAlterdbIniExit(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
-    procedure CarregaConfiguracaoAtual;
     function ValidaCadastroNovo: Boolean;
     function ValidaOK: Boolean;
+    procedure GravarIni;
+    procedure CarregarIni;
     { Private declarations }
   public
     { Public declarations }
@@ -80,45 +82,20 @@ begin
 end;
 
 procedure TfrPrincipal.btGravarClick(Sender: TObject);
-var
-  vAlterdbIni,
-  vIniBanco  : TIniFile;
 begin
   if MessageDlg('Confirma alteração?',mtConfirmation, mbYesNo, 0) = mrNo then
     Exit;
 
   if ValidaOK then
-
-
-  if FileExists(edDiretorioAlterdbIni.text) then
   begin
-    vAlterdbIni := TIniFile.Create(edDiretorioAlterdbIni.text);
-    try
       try
-        vAlterdbIni.DeleteKey('SERVIDOR', 'NOMESERVIDOR');
-        vAlterdbIni.WriteString('SERVIDOR', 'NOMESERVIDOR', cbServidorDestino.Text);
-        vAlterdbIni.DeleteKey('PATH', 'PATHPAR');
-        vAlterdbIni.WriteString('PATH', 'PATHPAR', cbPathDestino.Text);
         if ValidaCadastroNovo then
           ShowMessage('Salvo com sucesso!');
       except
-        ShowMessage('Ocorreu um erro ao salvar no INI');
+        ShowMessage('Ocorreu um erro ao salvar');
       end;
-    finally
-      FreeAndNil(vAlterdbIni)
-    end;
   end;
-
-  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
-  begin
-    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
-    try
-      vIniBanco.DeleteKey('PATH', 'PREFERENCIAPATH');
-      vIniBanco.WriteInteger('PATH', 'PREFERENCIAPATH', ifthen(chkServidor.Checked,1,0));
-    finally
-      FreeAndNil(vIniBanco)
-    end;
-  end;
+  GravarIni;
   btnCarregar.Click;
 end;
 
@@ -170,37 +147,9 @@ begin
   if not db.Connected then
     ConectaBanco;
 
-  CarregaConfiguracaoAtual;
+  CarregarIni;
   CarregaCombo(cbServidorDestino);
   CarregaCombo(cbPathDestino);
-end;
-
-procedure TfrPrincipal.CarregaConfiguracaoAtual;
-var
-  vAlterdbIni,
-  vIniBanco  : TIniFile;
-begin
-  if FileExists(edDiretorioAlterdbIni.text) then
-  begin
-    vAlterdbIni := TIniFile.Create(edDiretorioAlterdbIni.text);
-    try
-      edServidorAtual.Text := vAlterdbIni.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
-      edPathAtual.Text     := vAlterdbIni.ReadString('PATH',     'PATHPAR', '');
-    finally
-      FreeAndNil(vAlterdbIni)
-    end;
-  end;
-
-  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
-  begin
-    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
-    try
-      chkServidor.Checked  := (vIniBanco.ReadInteger('PATH', 'PREFERENCIAPATH', 0) = 1);
-    finally
-      FreeAndNil(vIniBanco)
-    end;
-  end;
-
 end;
 
 procedure TfrPrincipal.cbServidorDestinoChange(Sender: TObject);
@@ -209,19 +158,8 @@ begin
 end;
 
 procedure TfrPrincipal.chkServidorClick(Sender: TObject);
-var
-  vIniBanco  : TIniFile;
 begin
-  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
-  begin
-    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
-    try
-      vIniBanco.DeleteKey('PATH', 'PREFERENCIAPATH');
-      vIniBanco.WriteInteger('PATH', 'PREFERENCIAPATH', ifthen(chkServidor.Checked,1,0));
-    finally
-      FreeAndNil(vIniBanco)
-    end;
-  end;
+  GravarIni;
   CarregaCombo(cbPathDestino);
 end;
 
@@ -238,7 +176,7 @@ begin
       db.Params.Clear;
       db.DriverName := 'FB';
       vServidor := vIniBanco.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
-      vPath     := vIniBanco.ReadString('PATH', 'PATHPAR', '') + '\DADOS.FDB';
+      vPath     := vIniBanco.ReadString('PATH', 'PATHPAR', '');
       db.Params.Add(Format('Server=%s',[vServidor]));
       db.Params.Add(Format('Database=%s',[vPath]));
       db.Params.Add('User_name=SYSDBA');
@@ -258,6 +196,11 @@ begin
                'Servidor: ' + vServidor + #13 +
                'Path: ' + vPath);
   end;
+end;
+
+procedure TfrPrincipal.edDiretorioAlterdbIniExit(Sender: TObject);
+begin
+  GravarIni;
 end;
 
 procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
@@ -310,6 +253,56 @@ begin
 
   if pCombo.ItemIndex < 0 then
     pCombo.Text := EmptyStr;
+end;
+
+procedure TfrPrincipal.GravarIni;
+var
+  vAlterdbIni,
+  vIniBanco  : TIniFile;
+begin
+  vAlterdbIni := TIniFile.Create(edDiretorioAlterdbIni.text);
+  try
+    vAlterdbIni.DeleteKey('SERVIDOR', 'NOMESERVIDOR');
+    vAlterdbIni.WriteString('SERVIDOR', 'NOMESERVIDOR', cbServidorDestino.Text);
+    vAlterdbIni.DeleteKey('PATH', 'PATHPAR');
+    vAlterdbIni.WriteString('PATH', 'PATHPAR', cbPathDestino.Text);
+  finally
+    FreeAndNil(vAlterdbIni);
+  end;
+
+  vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  try
+    vIniBanco.DeleteKey('PATH', 'PREFERENCIAPATH');
+    vIniBanco.WriteInteger('PATH', 'PREFERENCIAPATH', ifthen(chkServidor.Checked,1,0));
+    vIniBanco.DeleteKey('PATH', 'LOCALDIRINIFC');
+    vIniBanco.WriteString('PATH', 'LOCALDIRINIFC', edDiretorioAlterdbIni.Text);
+
+  finally
+    FreeAndNil(vIniBanco);
+  end;
+end;
+
+
+procedure TfrPrincipal.CarregarIni;
+var
+  vAlterdbIni,
+  vIniBanco  : TIniFile;
+begin
+  vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
+  try
+    chkServidor.Checked        := (vIniBanco.ReadInteger('PATH', 'PREFERENCIAPATH', 0) = 1);
+    edDiretorioAlterdbIni.Text := vIniBanco.ReadString('PATH',     'LOCALDIRINIFC', '');
+  finally
+    FreeAndNil(vIniBanco)
+  end;
+
+  vAlterdbIni := TIniFile.Create(edDiretorioAlterdbIni.text);
+  try
+    edServidorAtual.Text       := vAlterdbIni.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
+    edPathAtual.Text           := vAlterdbIni.ReadString('PATH',     'PATHPAR', '');
+  finally
+    FreeAndNil(vAlterdbIni)
+  end;
 end;
 
 end.
