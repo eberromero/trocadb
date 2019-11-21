@@ -128,7 +128,6 @@ object frPrincipal: TfrPrincipal
     Width = 726
     Height = 21
     TabOrder = 1
-    Text = 'E:\dese.git\Executaveis\FormulaCerta\alterdb.ini'
   end
   object GroupBox2: TGroupBox
     Left = 374
@@ -156,6 +155,7 @@ object frPrincipal: TfrPrincipal
       Top = 32
       Width = 181
       Height = 21
+      Style = csDropDownList
       DropDownCount = 16
       TabOrder = 0
       OnChange = cbServidorDestinoChange
