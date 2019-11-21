@@ -129,7 +129,6 @@ object frPrincipal: TfrPrincipal
     Height = 21
     TabOrder = 1
     Text = 'E:\dese.git\Executaveis\FormulaCerta\alterdb.ini'
-    OnExit = edDiretorioAlterdbIniExit
   end
   object GroupBox2: TGroupBox
     Left = 374

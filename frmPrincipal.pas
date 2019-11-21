@@ -41,7 +41,6 @@ type
     procedure btGravarClick(Sender: TObject);
     procedure chkServidorClick(Sender: TObject);
     procedure cbServidorDestinoChange(Sender: TObject);
-    procedure edDiretorioAlterdbIniExit(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
@@ -161,7 +160,6 @@ end;
 
 procedure TfrPrincipal.chkServidorClick(Sender: TObject);
 begin
-  GravaIni;
   CarregaCombo(cbPathDestino);
 end;
 
@@ -197,20 +195,6 @@ begin
                'Valide o arquivo do banco de dados em:' + #13 +
                'Servidor: ' + vServidor + #13 +
                'Path: ' + vPath);
-  end;
-end;
-
-procedure TfrPrincipal.edDiretorioAlterdbIniExit(Sender: TObject);
-begin
-  if FileExists(edDiretorioAlterdbIni.Text) then
-  begin
-    CarregaDados;
-  end
-  else
-  begin
-    ShowMessage('Arquivo indicado não encontrado, Verifique!');
-    CarregaIni;
-    edDiretorioAlterdbIni.SetFocus;
   end;
 end;
 
