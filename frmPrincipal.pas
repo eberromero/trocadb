@@ -34,6 +34,8 @@ type
     edServidorAtual: TEdit;
     edPathAtual: TEdit;
     chkServidor: TCheckBox;
+    sbServidor: TSpeedButton;
+    sbDiretorio: TSpeedButton;
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure btnCarregarClick(Sender: TObject);
@@ -41,6 +43,7 @@ type
     procedure btGravarClick(Sender: TObject);
     procedure chkServidorClick(Sender: TObject);
     procedure cbServidorDestinoChange(Sender: TObject);
+    procedure sbServidorClick(Sender: TObject);
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
@@ -72,6 +75,31 @@ end;
 procedure TfrPrincipal.FormCreate(Sender: TObject);
 begin
   btnCarregar.Click;
+end;
+
+procedure TfrPrincipal.sbServidorClick(Sender: TObject);
+var
+  vServidor: Boolean;
+  vMsg: String;
+begin
+  vServidor := (TSpeedButton(Sender).Name = 'sbServidor');
+
+  if vServidor then
+    vMsg := 'servidor e diretórios'
+  else
+    vMsg := 'diretório';
+
+  if MessageDlg('Confirma exclusão do ' + vMsg +'?', mtConfirmation, mbYesNo,0 ) = mrNo then
+    Exit;
+
+  qryAux.Close;
+  if vServidor then
+    qryAux.SQL.Text := Format('DELETE FROM SERVIDOR WHERE NOMESERVIDOR = %s',[QuotedStr(cbServidorDestino.Text)])
+  else
+    qryAux.SQL.Text := Format('DELETE FROM SERVIDOR WHERE NOMESERVIDOR = %s and PATHSERVIDOR = %s',[QuotedStr(cbServidorDestino.Text),QuotedStr(cbPathDestino.Text)]);
+  qryAux.ExecSQL;
+
+  CarregaDados;
 end;
 
 procedure TfrPrincipal.SpeedButton2Click(Sender: TObject);
