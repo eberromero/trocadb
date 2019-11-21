@@ -45,11 +45,11 @@ type
   private
     function ConectaBanco: Boolean;
     procedure CarregaCombo(pCombo: TComboBox);
-    procedure CarregaConfiguracaoAtual;
     function ValidaCadastroNovo: Boolean;
     function ValidaOK: Boolean;
     procedure CarregaIni;
     procedure GravaIni;
+    procedure CarregaDados;
     { Private declarations }
   public
     { Public declarations }
@@ -93,7 +93,7 @@ begin
       ShowMessage('Salvo com sucesso!');
   end;
   GravaIni;
-  btnCarregar.Click;
+  CarregaDados;
 end;
 
 function TfrPrincipal.ValidaOK: Boolean;
@@ -144,38 +144,14 @@ begin
   if not db.Connected then
     ConectaBanco;
 
-//  CarregaConfiguracaoAtual;
+  CarregaDados;
+end;
+
+procedure TfrPrincipal.CarregaDados;
+begin
   CarregaIni;
   CarregaCombo(cbServidorDestino);
   CarregaCombo(cbPathDestino);
-end;
-
-procedure TfrPrincipal.CarregaConfiguracaoAtual;
-var
-  vAlterdbIni,
-  vIniBanco  : TIniFile;
-begin
-  if FileExists(edDiretorioAlterdbIni.text) then
-  begin
-    vAlterdbIni := TIniFile.Create(edDiretorioAlterdbIni.text);
-    try
-      edServidorAtual.Text := vAlterdbIni.ReadString('SERVIDOR', 'NOMESERVIDOR', '');
-      edPathAtual.Text     := vAlterdbIni.ReadString('PATH',     'PATHPAR', '');
-    finally
-      FreeAndNil(vAlterdbIni)
-    end;
-  end;
-
-  if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
-  begin
-    vIniBanco := TIniFile.Create(ChangeFileExt(Application.ExeName,'.ini'));
-    try
-      chkServidor.Checked  := (vIniBanco.ReadInteger('PATH', 'PREFERENCIAPATH', 0) = 1);
-    finally
-      FreeAndNil(vIniBanco)
-    end;
-  end;
-
 end;
 
 procedure TfrPrincipal.cbServidorDestinoChange(Sender: TObject);
@@ -227,7 +203,15 @@ end;
 procedure TfrPrincipal.edDiretorioAlterdbIniExit(Sender: TObject);
 begin
   if FileExists(edDiretorioAlterdbIni.Text) then
-    GravaIni;
+  begin
+    CarregaDados;
+  end
+  else
+  begin
+    ShowMessage('Arquivo indicado não encontrado, Verifique!');
+    CarregaIni;
+    edDiretorioAlterdbIni.SetFocus;
+  end;
 end;
 
 procedure TfrPrincipal.CarregaCombo(pCombo: TComboBox);
