@@ -1,4 +1,4 @@
-unit frmPrincipal;
+﻿unit frmPrincipal;
 
 interface
 
@@ -52,9 +52,7 @@ type
     function ValidaOK: Boolean;
     procedure GravarIni;
     procedure CarregarIni;
-    procedure CarregaIni;
-    procedure GravaIni;
-    procedure CarregaDados;
+    procedure CarregarDados;
     { Private declarations }
   public
     { Public declarations }
@@ -102,7 +100,7 @@ begin
     qryAux.SQL.Text := Format('DELETE FROM SERVIDOR WHERE NOMESERVIDOR = %s and PATHSERVIDOR = %s',[QuotedStr(cbServidorDestino.Text),QuotedStr(cbPathDestino.Text)]);
   qryAux.ExecSQL;
 
-  CarregaDados;
+  CarregarDados;
 end;
 
 procedure TfrPrincipal.SpeedButton2Click(Sender: TObject);
@@ -114,7 +112,7 @@ end;
 
 procedure TfrPrincipal.btGravarClick(Sender: TObject);
 begin
-  if MessageDlg('Confirma altera��o?',mtConfirmation, mbYesNo, 0) = mrNo then
+  if MessageDlg('Confirma alteração?',mtConfirmation, mbYesNo, 0) = mrNo then
     Exit;
 
   if ValidaOK then
@@ -126,8 +124,8 @@ begin
         ShowMessage('Ocorreu um erro ao salvar');
       end;
   end;
-  GravaIni;
-  CarregaDados;
+  GravarIni;
+  CarregarDados;
 end;
 
 function TfrPrincipal.ValidaOK: Boolean;
@@ -135,7 +133,7 @@ begin
   Result := True;
   if Trim(cbServidorDestino.Text) = EmptyStr then
   begin
-    ShowMessage('Servidor obrigat�rio!');
+    ShowMessage('Servidor obrigatório!');
     Result := False;
     cbServidorDestino.SetFocus;
     Exit;
@@ -178,12 +176,12 @@ begin
   if not db.Connected then
     ConectaBanco;
 
-  CarregaDados;
+  CarregarDados;
 end;
 
-procedure TfrPrincipal.CarregaDados;
+procedure TfrPrincipal.CarregarDados;
 begin
-  CarregaIni;
+  CarregarIni;
   CarregaCombo(cbServidorDestino);
   CarregaCombo(cbPathDestino);
 end;
@@ -194,6 +192,8 @@ begin
 end;
 
 procedure TfrPrincipal.chkServidorClick(Sender: TObject);
+var
+  vIniBanco: TIniFile;
 begin
   if FileExists(ChangeFileExt(Application.ExeName,'.ini')) then
   begin
@@ -300,7 +300,7 @@ begin
     pCombo.Text := EmptyStr;
 end;
 
-procedure TfrPrincipal.CarregaIni;
+procedure TfrPrincipal.CarregarIni;
 var
   vAlterdbIni,
   vIniBanco  : TIniFile;
@@ -322,7 +322,7 @@ begin
   end;
 end;
 
-procedure TfrPrincipal.GravaIni;
+procedure TfrPrincipal.GravarIni;
 var
   vAlterdbIni,
   vIniBanco  : TIniFile;
